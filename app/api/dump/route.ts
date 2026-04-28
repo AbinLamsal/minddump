@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Category, Nature } from '@/lib/types'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase-server'
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
 
@@ -67,22 +66,6 @@ export async function POST(request: NextRequest) {
 
     const entryId = crypto.randomUUID()
     const createdAt = new Date().toISOString()
-
-    // Persist to Supabase if userId provided
-    if (userId) {
-      const db = createServerClient()
-      await db.from('entries').insert({
-        id: entryId,
-        user_id: userId,
-        content: content.trim(),
-        category: parsed.category,
-        nature: parsed.nature,
-        acknowledgement: parsed.acknowledgement,
-        reminder_time: null,
-        reminder_sent: false,
-        created_at: createdAt,
-      })
-    }
 
     const entry = {
       id: entryId,

@@ -87,6 +87,10 @@ export default function Home() {
     if (reminderIntent) {
       setReminderPromptIds((prev) => new Set(Array.from(prev).concat(entry.id)))
     }
+    // Insert directly from browser client — anon key works since RLS is disabled
+    if (userId) {
+      supabase.from('entries').insert({ ...entry, user_id: userId })
+    }
   }
 
   async function handleDelete(id: string) {
