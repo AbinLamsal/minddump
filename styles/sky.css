@@ -1,0 +1,579 @@
+/* =============================================
+   ANIMATIONS
+   ============================================= */
+
+@keyframes star-shimmer {
+  0%, 100% { opacity: var(--star-opacity); }
+  50%       { opacity: calc(var(--star-opacity) * 0.45); }
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(-20px); }
+  to   { transform: translateX(20px); }
+}
+
+/* =============================================
+   SKY ROOT — fixed full-screen container
+   ============================================= */
+
+[data-sky].sky-root {
+  position: fixed !important;
+  inset: 0 !important;
+  overflow: hidden;
+}
+
+/* =============================================
+   SKY LAYER (absolute within fixed sky-root)
+   ============================================= */
+
+.sky-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sky-gradient {
+  position: absolute;
+  inset: 0;
+  background-image: var(--sky-gradient);
+}
+
+/* =============================================
+   GROUND STRIP
+   ============================================= */
+
+.sky-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18%;
+  background: var(--ground-color);
+}
+
+/* =============================================
+   GRASS STRIP
+   ============================================= */
+
+.sky-grass {
+  position: absolute;
+  bottom: 12%;
+  left: 0;
+  right: 0;
+  height: 9%;
+  background: linear-gradient(to bottom, var(--grass-color), var(--grass-mid));
+  clip-path: polygon(
+    0% 100%, 0% 62%,
+    1.5% 8%,  3%    62%,
+    5%   30%, 7%    63%,
+    9%   0%,  11%   62%,
+    13%  38%, 15%   64%,
+    17%  5%,  19%   62%,
+    21%  22%, 23%   63%,
+    25.5% 0%, 28%   64%,
+    30%  32%, 32%   62%,
+    34%  12%, 36%   63%,
+    38.5% 0%, 41%   64%,
+    43%  20%, 45%   62%,
+    47%  5%,  49%   63%,
+    51%  0%,  53.5% 62%,
+    55.5% 35%, 58%  64%,
+    60%  10%, 62%   62%,
+    64.5% 0%, 67%   63%,
+    69%  28%, 71%   64%,
+    73%  8%,  75%   62%,
+    77%  0%,  79%   63%,
+    81.5% 20%, 84%  64%,
+    86%  12%, 88%   62%,
+    90.5% 0%, 93%   63%,
+    95%  32%, 97%   62%,
+    99%  5%,  100%  62%,
+    100% 100%
+  );
+  transition: background 2s ease;
+}
+
+/* =============================================
+   HORIZON GLOW
+   ============================================= */
+
+.sky-horizon {
+  position: absolute;
+  bottom: 14%;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: var(--horizon-glow, transparent);
+  filter: blur(36px);
+  opacity: var(--horizon-opacity, 0);
+}
+
+/* =============================================
+   SUN
+   ============================================= */
+
+.sky-sun {
+  position: absolute;
+  width: var(--sun-size, 46px);
+  height: var(--sun-size, 46px);
+  border-radius: 50%;
+  background: var(--sun-color);
+  box-shadow: var(--sun-glow);
+  transform: translate(-50%, 50%);
+  opacity: var(--sun-opacity, 1);
+  transition: opacity 2s ease, width 1.5s ease, height 1.5s ease;
+}
+
+/* =============================================
+   MOON
+   ============================================= */
+
+.sky-moon {
+  position: absolute;
+  top: 18%;
+  right: 20%;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #F4F0FC, #C8C0E0);
+  box-shadow:
+    0 0 18px rgba(210, 200, 248, 0.45),
+    0 0 55px rgba(180, 170, 230, 0.2);
+  opacity: var(--moon-opacity, 0);
+  transition: opacity 2s ease;
+}
+
+/* =============================================
+   STARS
+   ============================================= */
+
+.sky-stars {
+  position: absolute;
+  inset: 0;
+}
+
+.sky-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  opacity: var(--star-opacity, 0);
+  transition: opacity 2s ease;
+}
+
+[data-sky="midnight"] .sky-star,
+[data-sky="twilight"] .sky-star {
+  animation: star-shimmer var(--shimmer-dur, 3s) ease-in-out infinite;
+  animation-delay: var(--shimmer-off, 0s);
+}
+
+/* 12 scattered stars — upper sky */
+.sky-star:nth-child(1)  { top:  7%; left:  8%; width: 2px; height: 2px; --shimmer-dur: 2.1s; --shimmer-off: 0.0s; }
+.sky-star:nth-child(2)  { top:  4%; left: 22%; width: 3px; height: 3px; --shimmer-dur: 3.4s; --shimmer-off: 0.5s; }
+.sky-star:nth-child(3)  { top: 11%; left: 38%; width: 2px; height: 2px; --shimmer-dur: 2.8s; --shimmer-off: 1.2s; }
+.sky-star:nth-child(4)  { top:  5%; left: 55%; width: 3px; height: 3px; --shimmer-dur: 3.1s; --shimmer-off: 0.8s; }
+.sky-star:nth-child(5)  { top: 14%; left: 70%; width: 2px; height: 2px; --shimmer-dur: 2.5s; --shimmer-off: 1.8s; }
+.sky-star:nth-child(6)  { top:  8%; left: 85%; width: 2px; height: 2px; --shimmer-dur: 3.7s; --shimmer-off: 0.3s; }
+.sky-star:nth-child(7)  { top: 21%; left: 15%; width: 2px; height: 2px; --shimmer-dur: 2.9s; --shimmer-off: 2.1s; }
+.sky-star:nth-child(8)  { top: 18%; left: 47%; width: 3px; height: 3px; --shimmer-dur: 3.3s; --shimmer-off: 1.5s; }
+.sky-star:nth-child(9)  { top:  9%; left: 63%; width: 2px; height: 2px; --shimmer-dur: 2.6s; --shimmer-off: 0.7s; }
+.sky-star:nth-child(10) { top: 28%; left: 32%; width: 2px; height: 2px; --shimmer-dur: 3.8s; --shimmer-off: 2.5s; }
+.sky-star:nth-child(11) { top: 24%; left: 78%; width: 3px; height: 3px; --shimmer-dur: 2.3s; --shimmer-off: 1.1s; }
+.sky-star:nth-child(12) { top: 32%; left: 92%; width: 2px; height: 2px; --shimmer-dur: 3.6s; --shimmer-off: 0.9s; }
+
+/* =============================================
+   CLOUDS
+   ============================================= */
+
+.sky-cloud {
+  position: absolute;
+  border-radius: 50px;
+  filter: blur(10px);
+  background: #fff;
+  opacity: var(--cloud-opacity, 0);
+  transition: opacity 2s ease;
+  animation: cloud-drift 12s ease-in-out infinite alternate;
+}
+
+.sky-cloud:nth-child(1) {
+  top: 22%; left: 12%;
+  width: 200px; height: 55px;
+  animation-delay: 0s;
+}
+.sky-cloud:nth-child(2) {
+  top: 34%; right: 16%;
+  width: 240px; height: 62px;
+  animation-delay: -6s;
+}
+
+/* =============================================
+   CONTENT LAYER — scrollable overlay
+   ============================================= */
+
+.sky-content {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =============================================
+   CSS CUSTOM PROPERTIES — DAWN (5–7am)
+   ============================================= */
+
+[data-sky="dawn"] {
+  --sky-gradient:   linear-gradient(180deg, #1A1230 0%, #3D1F3A 25%, #7A3550 45%, #C4704A 65%, #E8A870 80%, #F0C890 100%);
+  --ground-color:   #2A1A12;
+  --grass-color:    #1C3015;
+  --grass-mid:      #0E1B0A;
+  --horizon-glow:   radial-gradient(ellipse at 50% 100%, #E8A870, transparent 70%);
+  --horizon-opacity: 0.7;
+  --sun-size:       38px;
+  --sun-color:      radial-gradient(circle, #FFD888 30%, #E8A030 70%, #C47020 100%);
+  --sun-glow:       0 0 22px rgba(232,168,112,0.75), 0 0 60px rgba(232,168,112,0.3);
+  --sun-opacity:    1;
+  --moon-opacity:   0;
+  --star-opacity:   0.3;
+  --cloud-opacity:  0;
+  /* content colours */
+  --sky-text-primary:    #2D160C;
+  --sky-text-secondary:  #5A3520;
+  --sky-text-muted:      #8B6050;
+  --sky-header-bg:       rgba(42,26,18,0.65);
+  --sky-header-border:   rgba(196,112,74,0.2);
+  --sky-header-text:     #F0C890;
+  --sky-card-bg:         rgba(255,242,225,0.9);
+  --sky-card-border:     rgba(196,112,74,0.28);
+  --sky-card-text:       #3D1A0C;
+  --sky-card-muted:      #7A4030;
+  --sky-input-bg:        rgba(255,248,235,0.92);
+  --sky-input-border:    rgba(196,112,74,0.45);
+  --sky-input-text:      #2D160C;
+  --sky-input-placeholder: rgba(139,96,80,0.7);
+  --sky-button-bg:       #C47040;
+  --sky-button-hover:    #A85A30;
+  --sky-sidebar-bg:      rgba(255,242,225,0.75);
+  --sky-sidebar-text:    #7A4030;
+  --sky-sidebar-active:  #C47040;
+}
+
+/* =============================================
+   MORNING (7am–12pm)
+   ============================================= */
+
+[data-sky="morning"] {
+  --sky-gradient:   linear-gradient(180deg, #1A6090 0%, #2E8AB8 20%, #5AAAD0 45%, #88C8E0 65%, #C0E4F0 85%, #E8F4F8 100%);
+  --ground-color:   #2D5A1A;
+  --grass-color:    #4A9422;
+  --grass-mid:      #2E6614;
+  --horizon-glow:   transparent;
+  --horizon-opacity: 0;
+  --sun-size:       46px;
+  --sun-color:      radial-gradient(circle, #FFFDE0 15%, #FFE870 50%, #FFD030 100%);
+  --sun-glow:       0 0 32px rgba(255,220,80,0.85), 0 0 80px rgba(255,200,50,0.35);
+  --sun-opacity:    1;
+  --moon-opacity:   0;
+  --star-opacity:   0;
+  --cloud-opacity:  0.6;
+  --sky-text-primary:    #0A2540;
+  --sky-text-secondary:  #1A3A5A;
+  --sky-text-muted:      #3A6080;
+  --sky-header-bg:       rgba(26,96,144,0.55);
+  --sky-header-border:   rgba(90,170,208,0.2);
+  --sky-header-text:     #E8F4F8;
+  --sky-card-bg:         rgba(255,255,255,0.93);
+  --sky-card-border:     rgba(90,170,208,0.28);
+  --sky-card-text:       #0A2540;
+  --sky-card-muted:      #2A5070;
+  --sky-input-bg:        rgba(255,255,255,0.96);
+  --sky-input-border:    rgba(90,170,208,0.5);
+  --sky-input-text:      #0A2540;
+  --sky-input-placeholder: rgba(58,96,128,0.65);
+  --sky-button-bg:       #2E8AB8;
+  --sky-button-hover:    #1A7098;
+  --sky-sidebar-bg:      rgba(255,255,255,0.8);
+  --sky-sidebar-text:    #2A5070;
+  --sky-sidebar-active:  #2E8AB8;
+}
+
+/* =============================================
+   AFTERNOON (12pm–4pm)
+   ============================================= */
+
+[data-sky="afternoon"] {
+  --sky-gradient:   linear-gradient(180deg, #1255A0 0%, #1E78C8 15%, #3A9AE0 35%, #6AB8EC 55%, #A8D8F4 75%, #D0EAF8 100%);
+  --ground-color:   #3A6818;
+  --grass-color:    #52A61C;
+  --grass-mid:      #3A7814;
+  --horizon-glow:   transparent;
+  --horizon-opacity: 0;
+  --sun-size:       54px;
+  --sun-color:      radial-gradient(circle, #FFFFFF 8%, #FFFCE0 28%, #FFE840 65%, #FFD020 100%);
+  --sun-glow:       0 0 44px rgba(255,230,80,0.9), 0 0 110px rgba(255,210,50,0.4);
+  --sun-opacity:    1;
+  --moon-opacity:   0;
+  --star-opacity:   0;
+  --cloud-opacity:  0.55;
+  --sky-text-primary:    #08203A;
+  --sky-text-secondary:  #183855;
+  --sky-text-muted:      #2A5878;
+  --sky-header-bg:       rgba(18,85,160,0.52);
+  --sky-header-border:   rgba(58,154,224,0.2);
+  --sky-header-text:     #D0EAF8;
+  --sky-card-bg:         rgba(255,255,255,0.94);
+  --sky-card-border:     rgba(58,154,224,0.22);
+  --sky-card-text:       #08203A;
+  --sky-card-muted:      #1E4870;
+  --sky-input-bg:        rgba(255,255,255,0.97);
+  --sky-input-border:    rgba(58,154,224,0.42);
+  --sky-input-text:      #08203A;
+  --sky-input-placeholder: rgba(42,88,120,0.6);
+  --sky-button-bg:       #1E78C8;
+  --sky-button-hover:    #0A60A8;
+  --sky-sidebar-bg:      rgba(255,255,255,0.82);
+  --sky-sidebar-text:    #1E4870;
+  --sky-sidebar-active:  #1E78C8;
+}
+
+/* =============================================
+   GOLDEN HOUR (4pm–7pm)
+   ============================================= */
+
+[data-sky="golden"] {
+  --sky-gradient:   linear-gradient(180deg, #1A2A50 0%, #2E3A5A 15%, #6A4030 35%, #C06030 55%, #E89050 70%, #F0C070 85%, #F8D890 100%);
+  --ground-color:   #1A100A;
+  --grass-color:    #5A5C18;
+  --grass-mid:      #3C3E10;
+  --horizon-glow:   radial-gradient(ellipse at 75% 100%, #E89050, transparent 65%);
+  --horizon-opacity: 0.8;
+  --sun-size:       50px;
+  --sun-color:      radial-gradient(circle, #FFD080 18%, #FF8828 58%, #E05010 100%);
+  --sun-glow:       0 0 30px rgba(255,136,40,0.8), 0 0 80px rgba(224,80,16,0.4);
+  --sun-opacity:    1;
+  --moon-opacity:   0;
+  --star-opacity:   0.2;
+  --cloud-opacity:  0;
+  --sky-text-primary:    #1A0A04;
+  --sky-text-secondary:  #4A2010;
+  --sky-text-muted:      #7A4818;
+  --sky-header-bg:       rgba(26,42,80,0.72);
+  --sky-header-border:   rgba(192,96,48,0.2);
+  --sky-header-text:     #F0C070;
+  --sky-card-bg:         rgba(255,240,210,0.9);
+  --sky-card-border:     rgba(192,96,48,0.32);
+  --sky-card-text:       #2A0E04;
+  --sky-card-muted:      #6A3014;
+  --sky-input-bg:        rgba(255,246,225,0.93);
+  --sky-input-border:    rgba(192,96,48,0.45);
+  --sky-input-text:      #2A0E04;
+  --sky-input-placeholder: rgba(122,72,24,0.65);
+  --sky-button-bg:       #C06030;
+  --sky-button-hover:    #A04820;
+  --sky-sidebar-bg:      rgba(255,240,210,0.78);
+  --sky-sidebar-text:    #6A3014;
+  --sky-sidebar-active:  #C06030;
+}
+
+/* =============================================
+   TWILIGHT (7pm–9pm)
+   ============================================= */
+
+[data-sky="twilight"] {
+  --sky-gradient:   linear-gradient(180deg, #08081A 0%, #12103A 20%, #2A1A4A 40%, #4A2040 60%, #7A3840 75%, #C07050 88%, #D09060 100%);
+  --ground-color:   #08040A;
+  --grass-color:    #1E2210;
+  --grass-mid:      #12160A;
+  --horizon-glow:   radial-gradient(ellipse at 82% 100%, #C07050, transparent 60%);
+  --horizon-opacity: 0.6;
+  --sun-size:       16px;
+  --sun-color:      radial-gradient(circle, #E0A070, #C07050);
+  --sun-glow:       0 0 10px rgba(192,112,80,0.65);
+  --sun-opacity:    1;
+  --moon-opacity:   0;
+  --star-opacity:   0.7;
+  --cloud-opacity:  0;
+  --sky-text-primary:    #E8E0F8;
+  --sky-text-secondary:  #C4BBDA;
+  --sky-text-muted:      #8B7FA8;
+  --sky-header-bg:       rgba(8,8,26,0.75);
+  --sky-header-border:   rgba(139,125,216,0.15);
+  --sky-header-text:     #C4BBDA;
+  --sky-card-bg:         rgba(30,18,52,0.9);
+  --sky-card-border:     rgba(139,125,216,0.22);
+  --sky-card-text:       #E0D8F5;
+  --sky-card-muted:      #9E94BC;
+  --sky-input-bg:        rgba(20,12,40,0.92);
+  --sky-input-border:    rgba(139,125,216,0.32);
+  --sky-input-text:      #E0D8F5;
+  --sky-input-placeholder: rgba(139,127,168,0.6);
+  --sky-button-bg:       #6B5FC4;
+  --sky-button-hover:    #5A4FB3;
+  --sky-sidebar-bg:      rgba(30,18,52,0.78);
+  --sky-sidebar-text:    #9E94BC;
+  --sky-sidebar-active:  #8B7DD8;
+}
+
+/* =============================================
+   MIDNIGHT (9pm–5am)
+   ============================================= */
+
+[data-sky="midnight"] {
+  --sky-gradient:   linear-gradient(180deg, #04040E 0%, #080818 25%, #0D0D22 55%, #10102A 80%, #14143A 100%);
+  --ground-color:   #020208;
+  --grass-color:    #0C0E08;
+  --grass-mid:      #060804;
+  --horizon-glow:   transparent;
+  --horizon-opacity: 0;
+  --sun-size:       0px;
+  --sun-color:      transparent;
+  --sun-glow:       none;
+  --sun-opacity:    0;
+  --moon-opacity:   1;
+  --star-opacity:   0.85;
+  --cloud-opacity:  0;
+  --sky-text-primary:    #E8E4F5;
+  --sky-text-secondary:  #C4BBDA;
+  --sky-text-muted:      #8B7FA8;
+  --sky-header-bg:       rgba(4,4,14,0.82);
+  --sky-header-border:   rgba(139,125,216,0.12);
+  --sky-header-text:     #C4BBDA;
+  --sky-card-bg:         rgba(18,14,38,0.9);
+  --sky-card-border:     rgba(139,125,216,0.18);
+  --sky-card-text:       #E0D8F5;
+  --sky-card-muted:      #9E94BC;
+  --sky-input-bg:        rgba(10,8,26,0.94);
+  --sky-input-border:    rgba(139,125,216,0.28);
+  --sky-input-text:      #E0D8F5;
+  --sky-input-placeholder: rgba(139,127,168,0.55);
+  --sky-button-bg:       #8B7DD8;
+  --sky-button-hover:    #7B6DC8;
+  --sky-sidebar-bg:      rgba(18,14,38,0.78);
+  --sky-sidebar-text:    #9E94BC;
+  --sky-sidebar-active:  #8B7DD8;
+}
+
+/* =============================================
+   CONTENT ELEMENT OVERRIDES
+   ============================================= */
+
+
+/* Header */
+[data-sky] .sky-header {
+  background: var(--sky-header-bg) !important;
+  border-color: var(--sky-header-border, transparent) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+[data-sky] .sky-app-name {
+  color: var(--sky-header-text) !important;
+}
+
+[data-sky] .sky-tagline-text {
+  color: var(--sky-text-muted) !important;
+}
+
+/* Hero */
+[data-sky] .sky-hero-title {
+  color: var(--sky-text-primary) !important;
+}
+
+[data-sky] .sky-hero-sub {
+  color: var(--sky-text-secondary) !important;
+}
+
+/* Section label */
+[data-sky] .sky-section-label {
+  color: var(--sky-text-muted);
+}
+
+/* Entry cards */
+[data-sky] .sky-card {
+  background-color: var(--sky-card-bg) !important;
+  border-color: var(--sky-card-border) !important;
+}
+
+[data-sky] .sky-card-primary {
+  color: var(--sky-card-text) !important;
+}
+
+[data-sky] .sky-card-muted {
+  color: var(--sky-card-muted) !important;
+}
+
+/* DumpBox textarea */
+[data-sky] .sky-textarea {
+  background-color: var(--sky-input-bg) !important;
+  border-color: var(--sky-input-border) !important;
+  color: var(--sky-input-text) !important;
+}
+
+[data-sky] .sky-textarea::placeholder {
+  color: var(--sky-input-placeholder) !important;
+  opacity: 1;
+}
+
+[data-sky] .sky-textarea:focus {
+  border-color: var(--sky-button-bg) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sky-button-bg) 20%, transparent) !important;
+}
+
+/* Submit button */
+[data-sky] .sky-submit-btn {
+  background-color: var(--sky-button-bg) !important;
+}
+
+[data-sky] .sky-submit-btn:hover:not(:disabled) {
+  background-color: var(--sky-button-hover) !important;
+}
+
+/* Sidebar */
+[data-sky] .sky-sidebar-wrap {
+  background: var(--sky-sidebar-bg) !important;
+  border-radius: 16px;
+  padding: 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+[data-sky] .sky-sidebar-label {
+  color: var(--sky-text-muted) !important;
+}
+
+[data-sky] .sky-sidebar-btn {
+  color: var(--sky-sidebar-text) !important;
+}
+
+[data-sky] .sky-sidebar-btn:hover {
+  background: color-mix(in srgb, var(--sky-sidebar-active) 12%, transparent) !important;
+  color: var(--sky-sidebar-active) !important;
+}
+
+[data-sky] .sky-sidebar-btn.sky-active {
+  color: var(--sky-sidebar-active) !important;
+  background: color-mix(in srgb, var(--sky-sidebar-active) 12%, transparent) !important;
+}
+
+[data-sky] .sky-sidebar-count {
+  background: color-mix(in srgb, var(--sky-sidebar-active) 18%, transparent) !important;
+  color: var(--sky-sidebar-active) !important;
+}
+
+/* Wind-down link in header */
+[data-sky] .sky-winddown-link {
+  background: color-mix(in srgb, var(--sky-button-bg) 20%, transparent) !important;
+  color: var(--sky-header-text) !important;
+}
+
+/* Late-night nudge banner */
+[data-sky] .sky-nudge-banner {
+  background: var(--sky-card-bg) !important;
+  border-color: var(--sky-card-border) !important;
+}
+
+[data-sky] .sky-nudge-text {
+  color: var(--sky-text-secondary) !important;
+}
