@@ -7,8 +7,6 @@ import EntryCard from '@/components/EntryCard'
 import Sidebar from '@/components/Sidebar'
 import { Entry, Category, CategoryFilter } from '@/lib/types'
 import { useSkyState } from '@/lib/skyState'
-import { supabase } from '@/lib/supabase'
-
 const CATEGORIES: Category[] = ['Todo', 'Note', 'Reminder', 'Idea', 'Feeling']
 
 const STARS = Array.from({ length: 12 })
@@ -43,21 +41,19 @@ export default function Home() {
     setUserId(uid)
     setIsLateNight(() => { const h = new Date().getHours(); return h >= 21 || h < 4 })
 
-    supabase
-      .from('entries')
-      .select('*')
-      .eq('user_id', uid)
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setEntries(data as Entry[])
-          scheduleNotifications(data as Entry[])
-        }
-        setLoading(false)
-      })
+    try {
+      const stored = localStorage.getItem('md_entries')
+      if (stored) {
+        const parsed = JSON.parse(stored) as Entry[]
+        setEntries(parsed)
+        scheduleNotifications(parsed)
+      }
+    } catch {
+      // corrupted storage — start fresh
+    }
+    setLoading(false)
 
     return () => {
-      // Clear all scheduled notification timeouts on unmount
       Object.values(notifTimeouts.current).forEach(clearTimeout)
     }
   }, [])
@@ -81,34 +77,44 @@ export default function Home() {
     })
   }
 
+  function saveEntries(updated: Entry[]) {
+    localStorage.setItem('md_entries', JSON.stringify(updated))
+  }
+
   function handleEntryAdded(entry: Entry, loopDetected: boolean, msg: string | null, reminderIntent: boolean) {
-    setEntries((prev) => [entry, ...prev])
+    setEntries((prev) => {
+      const updated = [entry, ...prev]
+      saveEntries(updated)
+      return updated
+    })
     if (loopDetected && msg) setLoopMessage(msg)
     if (reminderIntent) {
       setReminderPromptIds((prev) => new Set(Array.from(prev).concat(entry.id)))
     }
-    // Insert directly from browser client — anon key works since RLS is disabled
-    if (userId) {
-      supabase.from('entries').insert({ ...entry, user_id: userId })
-    }
   }
 
-  async function handleDelete(id: string) {
-    setEntries((prev) => prev.filter((e) => e.id !== id))
-    if (userId) {
-      await supabase.from('entries').delete().eq('id', id)
-    }
+  function handleDelete(id: string) {
+    setEntries((prev) => {
+      const updated = prev.filter((e) => e.id !== id)
+      saveEntries(updated)
+      return updated
+    })
   }
 
-  async function handleRecategorize(id: string, category: Category) {
-    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, category } : e))
-    if (userId) {
-      await supabase.from('entries').update({ category }).eq('id', id)
-    }
+  function handleRecategorize(id: string, category: Category) {
+    setEntries((prev) => {
+      const updated = prev.map((e) => e.id === id ? { ...e, category } : e)
+      saveEntries(updated)
+      return updated
+    })
   }
 
   function handleReminderSet(id: string, reminderTime: string) {
-    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, reminder_time: reminderTime } : e))
+    setEntries((prev) => {
+      const updated = prev.map((e) => e.id === id ? { ...e, reminder_time: reminderTime } : e)
+      saveEntries(updated)
+      return updated
+    })
     setReminderPromptIds((prev) => {
       const next = new Set(prev)
       next.delete(id)
