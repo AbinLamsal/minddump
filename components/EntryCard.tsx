@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Entry, Category, Nature } from '@/lib/types'
 
 const CATEGORIES: Category[] = ['Todo', 'Note', 'Reminder', 'Idea', 'Feeling']
@@ -52,7 +52,11 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
   const [showPicker, setShowPicker] = useState(false)
   const [category, setCategory] = useState<Category>(entry.category)
   const [showReminder, setShowReminder] = useState(showReminderPrompt && !entry.reminder_time)
-  const [reminderValue, setReminderValue] = useState(defaultPickerValue)
+  const [reminderValue, setReminderValue] = useState('')
+
+  useEffect(() => {
+    setReminderValue(defaultPickerValue())
+  }, [])
 
   const style = CATEGORY_STYLES[category]
   const nature = entry.nature ?? 'neutral'
@@ -132,6 +136,7 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
             <span
               title={`Reminder: ${formatReminderTime(entry.reminder_time)}`}
               className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 text-xs text-amber-500 dark:text-amber-400"
+              suppressHydrationWarning
             >
               🔔 {formatReminderTime(entry.reminder_time)}
             </span>
@@ -139,7 +144,7 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <span className="sky-card-muted text-xs text-[#C4BBDA] dark:text-[#4A4368]">{formatTime(entry.created_at)}</span>
+          <span className="sky-card-muted text-xs text-[#C4BBDA] dark:text-[#4A4368]" suppressHydrationWarning>{formatTime(entry.created_at)}</span>
           <button
             onClick={handleDelete}
             title="Delete entry"
