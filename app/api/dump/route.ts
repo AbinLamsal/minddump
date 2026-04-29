@@ -94,7 +94,10 @@ export async function POST(request: NextRequest) {
         reminder_sent: false,
         created_at: createdAt,
       })
-      if (saveError) console.error('Entry save error:', saveError)
+      if (saveError) {
+        console.error('Entry save error:', saveError)
+        return NextResponse.json({ error: `DB error: ${saveError.message}` }, { status: 500 })
+      }
     }
 
     const closing = windDown
