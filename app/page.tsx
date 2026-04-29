@@ -27,8 +27,6 @@ export default function Home() {
 
   const notifTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
-  if (!mounted) return null
-
   const overrideHour = founderMode && overrideTime
     ? parseInt(overrideTime.split(':')[0], 10)
     : null
@@ -93,6 +91,8 @@ export default function Home() {
       }, delay)
     })
   }
+
+  if (!mounted) return null
 
   function saveEntries(updated: Entry[]) {
     localStorage.setItem('md_entries', JSON.stringify(updated))
