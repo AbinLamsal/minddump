@@ -12,6 +12,7 @@ const CATEGORIES: Category[] = ['Todo', 'Note', 'Reminder', 'Idea', 'Feeling']
 const STARS = Array.from({ length: 12 })
 
 export default function Home() {
+  const [mounted, setMounted] = useState(false)
   const [entries, setEntries] = useState<Entry[]>([])
   const [filter, setFilter] = useState<CategoryFilter>('All')
   const [loading, setLoading] = useState(true)
@@ -26,6 +27,8 @@ export default function Home() {
 
   const notifTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
+  if (!mounted) return null
+
   const overrideHour = founderMode && overrideTime
     ? parseInt(overrideTime.split(':')[0], 10)
     : null
@@ -33,6 +36,7 @@ export default function Home() {
   const { sky, skyOpacity } = useSkyState(overrideHour)
 
   useEffect(() => {
+    setMounted(true)
     const uid = localStorage.getItem('md_user_id')
     if (!uid) {
       window.location.replace('/login')
