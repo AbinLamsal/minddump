@@ -121,12 +121,18 @@ export function computeSkyStateForHour(hour: number): SkyState {
   }
 }
 
+const SERVER_SKY: SkyState = {
+  key: 'midnight',
+  sun: null,
+  starOpacity: STAR_OPACITY['midnight'],
+  cloudOpacity: CLOUD_OPACITY['midnight'],
+  copy: SKY_COPY['midnight'],
+}
+
 export function useSkyState(overrideHour?: number | null) {
-  const [sky, setSky] = useState<SkyState>(() =>
-    overrideHour != null ? computeSkyStateForHour(overrideHour) : computeSkyState()
-  )
+  const [sky, setSky] = useState<SkyState>(SERVER_SKY)
   const [skyOpacity, setSkyOpacity] = useState(1)
-  const skyKeyRef = useRef(sky.key)
+  const skyKeyRef = useRef<SkyKey>('midnight')
 
   function applyNext(next: SkyState) {
     if (next.key !== skyKeyRef.current) {
@@ -140,6 +146,12 @@ export function useSkyState(overrideHour?: number | null) {
       setSky(next)
     }
   }
+
+  // Apply real sky state after hydration to avoid server/client mismatch
+  useEffect(() => {
+    applyNext(overrideHour != null ? computeSkyStateForHour(overrideHour) : computeSkyState())
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Respond to override hour changes (including reset to null)
   useEffect(() => {
