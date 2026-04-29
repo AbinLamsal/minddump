@@ -80,10 +80,10 @@ export async function POST(request: NextRequest) {
       created_at: createdAt,
     }
 
-    // Persist to Supabase (fire-and-forget — don't block the response)
+    // Persist to Supabase before responding (Vercel kills functions after response)
     if (userId) {
       const db = createServerClient()
-      db.from('entries').insert({
+      const { error: saveError } = await db.from('entries').insert({
         id: entryId,
         user_id: userId,
         content: entry.content,
@@ -93,9 +93,8 @@ export async function POST(request: NextRequest) {
         reminder_time: null,
         reminder_sent: false,
         created_at: createdAt,
-      }).then(({ error }) => {
-        if (error) console.error('Entry save error:', error)
       })
+      if (saveError) console.error('Entry save error:', saveError)
     }
 
     const closing = windDown
