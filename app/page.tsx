@@ -41,6 +41,7 @@ export default function Home() {
     setUserId(uid)
     setIsLateNight(() => { const h = new Date().getHours(); return h >= 21 || h < 4 })
 
+    // Load from localStorage immediately for fast paint
     try {
       const stored = localStorage.getItem('md_entries')
       if (stored) {
@@ -51,7 +52,19 @@ export default function Home() {
     } catch {
       // corrupted storage — start fresh
     }
-    setLoading(false)
+
+    // Fetch from Supabase as source of truth
+    fetch(`/api/entries?userId=${uid}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: Entry[] | null) => {
+        if (data) {
+          setEntries(data)
+          localStorage.setItem('md_entries', JSON.stringify(data))
+          scheduleNotifications(data)
+        }
+      })
+      .catch(() => {}) // silently fall back to cached localStorage data
+      .finally(() => setLoading(false))
 
     return () => {
       Object.values(notifTimeouts.current).forEach(clearTimeout)
@@ -99,6 +112,7 @@ export default function Home() {
       saveEntries(updated)
       return updated
     })
+    fetch(`/api/entries/${id}`, { method: 'DELETE' }).catch(() => {})
   }
 
   function handleRecategorize(id: string, category: Category) {
@@ -107,6 +121,11 @@ export default function Home() {
       saveEntries(updated)
       return updated
     })
+    fetch(`/api/entries/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category }),
+    }).catch(() => {})
   }
 
   function handleReminderSet(id: string, reminderTime: string) {

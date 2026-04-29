@@ -53,7 +53,6 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
   const [category, setCategory] = useState<Category>(entry.category)
   const [showReminder, setShowReminder] = useState(showReminderPrompt && !entry.reminder_time)
   const [reminderValue, setReminderValue] = useState(defaultPickerValue)
-  const [reminderSaving, setReminderSaving] = useState(false)
 
   const style = CATEGORY_STYLES[category]
   const nature = entry.nature ?? 'neutral'
@@ -70,35 +69,31 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
     onRecategorize(entry.id, newCategory)
   }
 
-  async function handleReminderConfirm() {
+  function handleReminderConfirm() {
     if (!reminderValue) return
-    setReminderSaving(true)
-    try {
-      const iso = new Date(reminderValue).toISOString()
-      const res = await fetch(`/api/entries/${entry.id}/reminder`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reminder_time: iso }),
-      })
-      if (res.ok) {
-        onReminderSet(entry.id, iso)
-        setShowReminder(false)
+    const iso = new Date(reminderValue).toISOString()
 
-        // Schedule browser notification as backup
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const delay = new Date(iso).getTime() - Date.now()
-          if (delay > 0 && delay < 7 * 24 * 60 * 60 * 1000) {
-            setTimeout(() => {
-              new Notification('MindDump reminder 🧠', {
-                body: entry.content,
-                icon: '/favicon.ico',
-              })
-            }, delay)
-          }
-        }
+    // Optimistic update — UI responds immediately
+    onReminderSet(entry.id, iso)
+    setShowReminder(false)
+
+    // Persist to DB in background
+    fetch(`/api/entries/${entry.id}/reminder`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reminder_time: iso }),
+    }).catch(() => {})
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const delay = new Date(iso).getTime() - Date.now()
+      if (delay > 0 && delay < 7 * 24 * 60 * 60 * 1000) {
+        setTimeout(() => {
+          new Notification('MindDump reminder 🧠', {
+            body: entry.content,
+            icon: '/favicon.ico',
+          })
+        }, delay)
       }
-    } finally {
-      setReminderSaving(false)
     }
   }
 
@@ -212,10 +207,10 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
             />
             <button
               onClick={handleReminderConfirm}
-              disabled={!reminderValue || reminderSaving}
+              disabled={!reminderValue}
               className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-600 disabled:opacity-50 transition-colors"
             >
-              {reminderSaving ? 'Saving…' : 'Set reminder'}
+              Set reminder
             </button>
             <button
               onClick={() => setShowReminder(false)}

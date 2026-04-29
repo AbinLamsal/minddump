@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Category, Nature } from '@/lib/types'
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase-server'
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
 
@@ -77,6 +78,24 @@ export async function POST(request: NextRequest) {
       reminder_time: null,
       reminder_sent: false,
       created_at: createdAt,
+    }
+
+    // Persist to Supabase (fire-and-forget — don't block the response)
+    if (userId) {
+      const db = createServerClient()
+      db.from('entries').insert({
+        id: entryId,
+        user_id: userId,
+        content: entry.content,
+        category: entry.category,
+        nature: entry.nature,
+        acknowledgement: entry.acknowledgement,
+        reminder_time: null,
+        reminder_sent: false,
+        created_at: createdAt,
+      }).then(({ error }) => {
+        if (error) console.error('Entry save error:', error)
+      })
     }
 
     const closing = windDown
