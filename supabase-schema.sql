@@ -20,6 +20,7 @@ create table if not exists entries (
   category        text not null check (category in ('Todo', 'Note', 'Reminder', 'Idea', 'Feeling')),
   acknowledgement text not null,
   nature          text check (nature in ('actionable', 'spiral', 'neutral')),
+  spiral_nudge    text,
   reminder_time   text,
   reminder_sent   boolean not null default false,
   created_at      timestamptz not null default now()
@@ -35,6 +36,10 @@ alter table entries
 -- Add reminder_sent column if running against an existing table
 alter table entries
   add column if not exists reminder_sent boolean not null default false;
+
+-- Add spiral_nudge column if running against an existing table
+alter table entries
+  add column if not exists spiral_nudge text;
 
 create index if not exists entries_user_id_idx on entries(user_id, created_at desc);
 create index if not exists entries_reminder_idx on entries(reminder_time) where reminder_sent = false;
