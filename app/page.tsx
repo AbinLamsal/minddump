@@ -4,10 +4,9 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import DumpBox from '@/components/DumpBox'
 import EntryCard from '@/components/EntryCard'
-import Sidebar from '@/components/Sidebar'
+import FilterPills from '@/components/FilterPills'
 import { Entry, Category, CategoryFilter } from '@/lib/types'
 import { useSkyState } from '@/lib/skyState'
-const CATEGORIES: Category[] = ['Todo', 'Note', 'Reminder', 'Idea', 'Feeling']
 
 const STARS = Array.from({ length: 12 })
 
@@ -26,8 +25,6 @@ export default function Home() {
   const [reminderPromptIds, setReminderPromptIds] = useState<Set<string>>(new Set())
 
   const notifTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
-
-  if (!mounted) return null
 
   const overrideHour = founderMode && overrideTime
     ? parseInt(overrideTime.split(':')[0], 10)
@@ -74,6 +71,8 @@ export default function Home() {
       Object.values(notifTimeouts.current).forEach(clearTimeout)
     }
   }, [])
+
+  if (!mounted) return null
 
   function scheduleNotifications(loadedEntries: Entry[]) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return
@@ -161,13 +160,6 @@ export default function Home() {
 
   const filtered = filter === 'All' ? entries : entries.filter((e) => e.category === filter)
 
-  const counts: Partial<Record<CategoryFilter, number>> = {
-    All: entries.length,
-    ...Object.fromEntries(
-      CATEGORIES.map((c) => [c, entries.filter((e) => e.category === c).length])
-    ),
-  }
-
   const recentEntries = entries.slice(0, 20).map((e) => e.content)
 
   return (
@@ -201,9 +193,6 @@ export default function Home() {
 
         {/* Moon */}
         <div className="sky-moon" />
-
-        {/* Ground */}
-        <div className="sky-ground" />
 
         {/* Grass */}
         <div className="sky-grass" />
@@ -301,9 +290,9 @@ export default function Home() {
 
           {/* Entries area */}
           {(entries.length > 0 || loading) && (
-            <div className="mt-12 flex gap-8">
-              <Sidebar active={filter} onChange={setFilter} counts={counts} />
-              <div className="flex-1">
+            <div className="mt-12">
+              <FilterPills active={filter} onChange={setFilter} />
+              <div>
                 {!loading && filtered.length > 0 && (
                   <p className="sky-section-label mb-4 text-xs font-semibold uppercase tracking-widest text-[#B8B0CC] dark:text-[#4A4368]">
                     {sky.copy.cardLabel}

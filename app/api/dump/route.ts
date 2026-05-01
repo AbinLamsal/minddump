@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase-server'
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
 
-const SYSTEM_PROMPT = `You are a calm, warm assistant helping an overthinker process their thoughts.
+const CLASSIFY_PROMPT = `You are a calm, warm assistant helping an overthinker process their thoughts.
 
 You will receive a new brain dump and optionally a list of recent entries from this person.
 
@@ -29,6 +29,22 @@ Rules:
 - loopMessage: if loopDetected is true, write one warm sentence gently surfacing the pattern (e.g. "You've come back to this a few times — want to make a small plan, or just let it out?"); otherwise null
 - Always be gentle. Never clinical.`
 
+const CROSS_SESSION_PROMPT = `You are analysing recurring thought patterns for someone who journals their worries.
+
+You will receive a new spiral/anxious entry and their historical spiral entries from the past 30 days.
+
+Look for a genuine recurring theme — a specific person, situation, fear, or worry that appears in the new entry AND in multiple historical entries. Count occurrences carefully.
+
+Only flag a pattern if the same specific theme appears in the new entry PLUS at least 2 historical entries (3+ total). Be specific — "your mum" is better than "relationships". Surface observations, not therapy.
+
+Respond in JSON only:
+{
+  "patternDetected": boolean,
+  "nudge": string | null
+}
+
+nudge format when patternDetected is true: warm, specific, factual — e.g. "You've mentioned your mum 4 times in the past two weeks." or "Work stress has come up 5 times this month." Max 20 words. No advice, just observation. null if no clear pattern.`
+
 export async function POST(request: NextRequest) {
   try {
     const { content, windDown, recentEntries = [], userId } = await request.json()
@@ -39,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: CLASSIFY_PROMPT,
     })
 
     const userMessage = recentEntries.length > 0
@@ -65,6 +81,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
     }
 
+    // Cross-session loop detection — only for spiral entries by logged-in users
+    let spiralNudge: string | null = null
+    if (parsed.nature === 'spiral' && userId) {
+      try {
+        const db = createServerClient()
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+        const { data: historicalSpirals } = await db
+          .from('entries')
+          .select('content, created_at')
+          .eq('user_id', userId)
+          .eq('nature', 'spiral')
+          .gte('created_at', thirtyDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(25)
+
+        if (historicalSpirals && historicalSpirals.length >= 2) {
+          const crossModel = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            systemInstruction: CROSS_SESSION_PROMPT,
+          })
+
+          const crossMessage = `New entry: ${content.trim()}\n\nHistorical spiral entries:\n${JSON.stringify(
+            historicalSpirals.map(e => ({ content: e.content, date: e.created_at.slice(0, 10) }))
+          )}`
+
+          const crossResult = await crossModel.generateContent(crossMessage)
+          const crossRaw = crossResult.response.text()
+          const crossCleaned = crossRaw.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
+          const crossParsed = JSON.parse(crossCleaned)
+
+          if (crossParsed.patternDetected && crossParsed.nudge) {
+            spiralNudge = crossParsed.nudge
+          }
+        }
+      } catch (err) {
+        // Cross-session analysis is best-effort — don't fail the whole request
+        console.error('Cross-session loop detection error:', err)
+      }
+    }
+
     const entryId = crypto.randomUUID()
     const createdAt = new Date().toISOString()
 
@@ -75,12 +132,12 @@ export async function POST(request: NextRequest) {
       category: parsed.category,
       nature: parsed.nature,
       acknowledgement: parsed.acknowledgement,
+      spiral_nudge: spiralNudge,
       reminder_time: null,
       reminder_sent: false,
       created_at: createdAt,
     }
 
-    // Persist to Supabase before responding (Vercel kills functions after response)
     if (userId) {
       const db = createServerClient()
       const { error: saveError } = await db.from('entries').insert({
@@ -90,6 +147,7 @@ export async function POST(request: NextRequest) {
         category: entry.category,
         nature: entry.nature,
         acknowledgement: entry.acknowledgement,
+        spiral_nudge: spiralNudge,
         reminder_time: null,
         reminder_sent: false,
         created_at: createdAt,

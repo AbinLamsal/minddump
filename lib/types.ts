@@ -8,6 +8,7 @@ export interface Entry {
   category: Category
   nature: Nature | null
   acknowledgement: string
+  spiral_nudge: string | null
   reminder_time: string | null
   reminder_sent: boolean
   created_at: string

@@ -59,10 +59,10 @@
 
 .sky-grass {
   position: absolute;
-  bottom: 12%;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: 9%;
+  height: 21%;
   background: linear-gradient(to bottom, var(--grass-color), var(--grass-mid));
   clip-path: polygon(
     0% 100%, 0% 62%,
@@ -258,6 +258,7 @@
   --sky-sidebar-bg:      rgba(255,242,225,0.75);
   --sky-sidebar-text:    #7A4030;
   --sky-sidebar-active:  #C47040;
+  --filter-pill-color:   #3B1A0A;
 }
 
 /* =============================================
@@ -297,6 +298,7 @@
   --sky-sidebar-bg:      rgba(255,255,255,0.8);
   --sky-sidebar-text:    #2A5070;
   --sky-sidebar-active:  #2E8AB8;
+  --filter-pill-color:   #0A2540;
 }
 
 /* =============================================
@@ -336,6 +338,7 @@
   --sky-sidebar-bg:      rgba(255,255,255,0.82);
   --sky-sidebar-text:    #1E4870;
   --sky-sidebar-active:  #1E78C8;
+  --filter-pill-color:   #08203A;
 }
 
 /* =============================================
@@ -375,6 +378,7 @@
   --sky-sidebar-bg:      rgba(255,240,210,0.78);
   --sky-sidebar-text:    #6A3014;
   --sky-sidebar-active:  #C06030;
+  --filter-pill-color:   #1A0A04;
 }
 
 /* =============================================
@@ -414,6 +418,7 @@
   --sky-sidebar-bg:      rgba(30,18,52,0.78);
   --sky-sidebar-text:    #9E94BC;
   --sky-sidebar-active:  #8B7DD8;
+  --filter-pill-color:   #F0E8FF;
 }
 
 /* =============================================
@@ -453,6 +458,7 @@
   --sky-sidebar-bg:      rgba(18,14,38,0.78);
   --sky-sidebar-text:    #9E94BC;
   --sky-sidebar-active:  #8B7DD8;
+  --filter-pill-color:   #E8E4F5;
 }
 
 /* =============================================
@@ -502,6 +508,19 @@
 
 [data-sky] .sky-card-muted {
   color: var(--sky-card-muted) !important;
+}
+
+/* Filter pill inactive labels */
+[data-sky] .sky-filter-pill {
+  color: var(--filter-pill-color) !important;
+  font-weight: 700;
+}
+
+/* Spiral note nudge */
+[data-sky] .sky-spiral-note {
+  background-color: var(--sky-card-border) !important;
+  border-color: var(--sky-card-border) !important;
+  color: var(--sky-card-text) !important;
 }
 
 /* DumpBox textarea */

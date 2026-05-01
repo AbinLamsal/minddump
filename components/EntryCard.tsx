@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Entry, Category, Nature } from '@/lib/types'
 
 const CATEGORIES: Category[] = ['Todo', 'Note', 'Reminder', 'Idea', 'Feeling']
@@ -50,7 +50,20 @@ interface EntryCardProps {
 
 export default function EntryCard({ entry, onDelete, onRecategorize, onReminderSet, showReminderPrompt = false }: EntryCardProps) {
   const [showPicker, setShowPicker] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [category, setCategory] = useState<Category>(entry.category)
+
+  useEffect(() => {
+    if (!showMenu) return
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMenu])
   const [showReminder, setShowReminder] = useState(showReminderPrompt && !entry.reminder_time)
   const [reminderValue, setReminderValue] = useState('')
 
@@ -116,14 +129,9 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
             />
           )}
           {/* Category badge */}
-          <button
-            onClick={() => setShowPicker((v) => !v)}
-            title="Change category"
-            className={`inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs font-medium transition-colors ${style.bg} ${style.text} hover:${style.activeBg} cursor-pointer`}
-          >
+          <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}>
             {style.label}
-            <span className="opacity-50 text-[10px]">▾</span>
-          </button>
+          </span>
 
           {nature === 'actionable' && (
             <span className="inline-block rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
@@ -145,15 +153,31 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
 
         <div className="flex shrink-0 items-center gap-2">
           <span className="sky-card-muted text-xs text-[#C4BBDA] dark:text-[#4A4368]" suppressHydrationWarning>{formatTime(entry.created_at)}</span>
-          <button
-            onClick={handleDelete}
-            title="Delete entry"
-            className="rounded-lg p-1 text-[#D4C8EA] dark:text-[#3D3860] opacity-0 group-hover:opacity-100 hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-400 transition-all"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => { setShowMenu((v) => !v); setShowPicker(false) }}
+              title="More options"
+              className="rounded-lg px-1.5 py-1 text-[#D4C8EA] dark:text-[#3D3860] opacity-0 group-hover:opacity-100 hover:bg-[#F0EDFB] dark:hover:bg-[#2D2845] hover:text-[#8B7DD8] transition-all text-sm leading-none"
+            >
+              ···
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-1 z-20 min-w-[140px] rounded-xl border border-[#EDE9F8] dark:border-[#2D2845] bg-white dark:bg-[#1E1A2E] shadow-lg py-1">
+                <button
+                  onClick={() => { setShowPicker(true); setShowMenu(false) }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-[#5A4F72] dark:text-[#C4BBDA] hover:bg-[#F5F3FC] dark:hover:bg-[#2D2845] transition-colors"
+                >
+                  Change category
+                </button>
+                <button
+                  onClick={() => { handleDelete(); setShowMenu(false) }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -191,10 +215,13 @@ export default function EntryCard({ entry, onDelete, onRecategorize, onReminderS
         {entry.content}
       </p>
 
-      {nature === 'spiral' && (
-        <p className="mt-3 rounded-xl border border-[#E8C99A] dark:border-[#FBE2C3]/30 bg-[#FBE2C3] dark:bg-[#FBE2C3]/20 px-3 py-2 text-xs text-[#6B5F8A] dark:text-[#C4B8E0] leading-relaxed italic">
-          This might be your anxiety talking — you don&apos;t have to solve this right now.
-        </p>
+      {entry.spiral_nudge && (
+        <div className="sky-spiral-note mt-3 flex items-start gap-2 rounded-2xl bg-gradient-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 border border-violet-200/60 dark:border-violet-500/20 px-4 py-3">
+          <span className="text-base mt-0.5">🫧</span>
+          <p className="sky-card-primary text-xs text-violet-900 dark:text-violet-200 leading-relaxed">
+            <span className="font-semibold sky-card-primary">Heads up: </span>{entry.spiral_nudge}
+          </p>
+        </div>
       )}
 
       {/* Reminder prompt — shown when AI detected reminder intent */}
