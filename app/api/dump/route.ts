@@ -20,7 +20,7 @@ Respond in JSON only with this structure:
 }
 
 Rules:
-- acknowledgement: one warm sentence, max 12 words, never clinical, never use productivity language
+- acknowledgement: one warm sentence, max 12 words, never clinical, never use productivity language. It must be specific to what they actually wrote — never generic. Never say "anxiety", "spiral", "worry", or "stress". Don't repeat the same phrase twice across entries. Reflect the actual content back to them gently.
 - nature "actionable": something concrete they can actually do something about
 - nature "spiral": anxiety, rumination, catastrophising, circular worrying, things outside their control
 - nature "neutral": everything else — observations, facts, plans, ideas without distress
